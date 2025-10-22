@@ -1,12 +1,20 @@
+import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/config';
 
-export async function GET() {
-  const result = await pool.query('SELECT * FROM users');
-  return new Response(JSON.stringify(result.rows), { status: 200 });
+interface User {
+  name: string;
+  email: string;
 }
 
-export async function POST(req:unknown) : Promise<unknown>{
-  const { name, email } = await req.json();
+export async function GET(): Promise<NextResponse> {
+  const result = await pool.query('SELECT * FROM users');
+  return NextResponse.json(result.rows, { status: 200 });
+}
+
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const body: User = await req.json();
+  const { name, email } = body;
+
   await pool.query('INSERT INTO users (name, email) VALUES ($1, $2)', [name, email]);
-  return new Response(JSON.stringify({ message: 'User created' }), { status: 201 });
+  return NextResponse.json({ message: 'User created' }, { status: 201 });
 }
